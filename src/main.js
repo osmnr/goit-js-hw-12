@@ -8,7 +8,7 @@ import axios from 'axios';
 const baseUrl = 'https://pixabay.com/api/?';
 const API_KEY = '48399114-e6afb1ef5f2eaab40be0bb5b8';
 
-let params = {
+const searchParams = new URLSearchParams({
   key: API_KEY,
   q: '',
   image_type: 'photo',
@@ -16,7 +16,7 @@ let params = {
   safesearch: true,
   per_page: 40,
   page: 1,
-};
+});
 
 let totalHits = 0;
 const message1 = "Sorry, there are no images matching your search query.Please, try again!";
@@ -86,7 +86,7 @@ function createMarkup(jsonData) {
 
 async function getData() {
   try {
-    const response = await axios.get(baseUrl, { params });
+    const response = await axios.get(baseUrl, { params: searchParams });
     loader.style.display = 'none';
     loadMore.style.display = 'none';
     totalHits = response.data.totalHits;
@@ -95,10 +95,14 @@ async function getData() {
     } 
     else {
       createMarkup(response.data);
-      if (params.page < Math.ceil(totalHits / params.per_page)) {
+
+      const currentPage = Number(searchParams.get('page'));
+      const perPage = Number(searchParams.get('per_page'));
+
+      if (currentPage < Math.ceil(totalHits / perPage)) {
         loadMore.style.display = 'block';
       }
-      if (Math.ceil(totalHits / params.per_page) === 1){
+      if (Math.ceil(totalHits / perPage) === 1){
         showError(message2, "aqua");
       }
     }
@@ -113,8 +117,8 @@ const searchInput = document.querySelector('.search-input');
 
 searchForm.addEventListener('submit', event => {
   event.preventDefault();
-  params.q = searchInput.value;
-  params.page = 1;
+  searchParams.set('q', searchInput.value);
+  searchParams.set('page', '1');
   // empty the inside of gallery ul
   contentUL.innerHTML = '';
   // lets make the loader visible first
@@ -123,8 +127,12 @@ searchForm.addEventListener('submit', event => {
 });
 
 loadMore.addEventListener('click', event => {
-  params.page += 1;
-  if (params.page >= Math.ceil(totalHits / params.per_page)) {
+  // increment the page number
+  let currentPage = Number(searchParams.get('page'));
+  let perPage = searchParams.get('per_page');
+  searchParams.set('page', currentPage + 1);
+
+  if (currentPage+1 >= Math.ceil(totalHits / perPage)) {
     getData();
     showError(message2, 'aqua');
     loadMore.style.display = 'none';

@@ -64,6 +64,9 @@
   border: solid 1px;
   border-radius: 5px;
 }
+.container-div:hover{
+  opacity: 75%;
+}
 
 .content-bottom {
   display: flex;

@@ -25,6 +25,12 @@ const contentUL = document.querySelector('.image-content');
 const loader = document.querySelector('.loader');
 const loadMore = document.querySelector('.load-more-button');
 
+function scrollPage(){
+  let listItems = document.querySelector('.content-list-item');
+  let rect = listItems.getBoundingClientRect();
+  window.scrollBy({top: rect.height*2, behavior: 'smooth',});
+}
+
 // showing error using izitoast
 function showError(errorMessage, bgcolor) {
   iziToast.settings({
@@ -126,17 +132,17 @@ searchForm.addEventListener('submit', event => {
   getData();
 });
 
-loadMore.addEventListener('click', event => {
+loadMore.addEventListener('click', async (event) => {
   // increment the page number
   let currentPage = Number(searchParams.get('page'));
   let perPage = searchParams.get('per_page');
   searchParams.set('page', currentPage + 1);
 
+  await getData();
+  scrollPage();
+  
   if (currentPage+1 >= Math.ceil(totalHits / perPage)) {
-    getData();
     showError(message2, 'aqua');
     loadMore.style.display = 'none';
-  } else {
-    getData();
   }
 });
